@@ -93,7 +93,7 @@ const STARTER_TEMPLATE = {
   openingBids: [
     { bid: "1♣", meaning: "3+ ♣, 12–19 points", alert: false },
     { bid: "1♦", meaning: "4+ ♦, 12–19 points", alert: false },
-    { bid: "1♥ / 1♠", meaning: "5+ 1♥ / 1♠, 12–19 points", alert: false },
+    { bid: "1♥ / 1♠", meaning: "5+ ♥/♠, 12–19 points", alert: false },
     { bid: "1NT", meaning: "15–17 balanced, but could have a 5 card major", alert: true },
     { bid: "2♣", meaning: "Strong, artificial, 22+ points", alert: false },
     { bid: "2♦ / 2♥ / 2♠", meaning: "Weak two, 6-card suit, 6–10 pts", alert: false },
@@ -110,8 +110,8 @@ const STARTER_TEMPLATE = {
     { label: "Jacoby 2NT", checked: true, note: "2NT response to 1♥/♠ promising 4 cards and 14+ points" }
   ],
   leads: [
-    { label: "Vs. suit contracts", note: "A from AK, K from KQ, Card from partner's bid," },
-    { label: "Vs. notrump contracts", note: "4th from longest and strongest" }
+    { label: "Vs. Suit contracts", note: "A from AK, K from KQ, Card from partner's bid," },
+    { label: "Vs. Notrump contracts", note: "4th from longest and strongest" }
   ],
   signals: [
     { label: "Response to lead", note: "Standard (high = encourage)" }
