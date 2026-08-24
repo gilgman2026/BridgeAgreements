@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bridge Convention Card Maker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span class="toolbar-title">Bridge Convention Card Maker</span>
+  <div class="toolbar-actions" id="workspaceActions" hidden>
+    <span id="exportStatus" class="save-status"></span>
+    <button type="button" id="startOverBtn" class="link-btn">Start Over</button>
+    <button type="button" id="exportBtn">Export PDF</button>
+  </div>
+</div>
+
+<div id="landing">
+  <div class="landing-card">
+    <h1>Bridge Convention Card Maker</h1>
+    <p class="landing-sub">Fill out a partnership's system and export it as a printable PDF. The PDF itself carries the data, so re-uploading it later picks up right where you left off — no separate file to keep track of.</p>
+    <div class="landing-actions">
+      <button type="button" id="startNewBtn" class="landing-btn primary">Start a New Card</button>
+      <button type="button" id="uploadBtn" class="landing-btn">Upload an Existing Card (PDF)</button>
+      <input type="file" id="uploadFileInput" accept=".pdf,application/pdf" hidden>
+    </div>
+    <p id="landingError" class="landing-error" hidden></p>
+  </div>
+</div>
+
+<div id="workspace" class="workspace-layout" hidden>
+
+  <form id="editorForm" class="editor-body" onsubmit="return false;">
+
+    <section class="panel">
+      <h2>Header</h2>
+      <div class="field-row">
+        <label>Pair names<input type="text" id="f-pairNames"></label>
+        <label>System name<input type="text" id="f-systemName"></label>
+        <label>Date<input type="text" id="f-date" placeholder="optional"></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>General Approach</h2>
+      <div class="field-row">
+        <label class="grow">Summary<textarea id="f-summary" rows="2"></textarea></label>
+      </div>
+      <h3>1NT Ranges by Seat</h3>
+      <div class="repeat-list" id="list-notrumpRanges"></div>
+      <button type="button" class="add-btn" data-list="notrumpRanges">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Opening Bids</h2>
+      <div class="repeat-list" id="list-openingBids"></div>
+      <button type="button" class="add-btn" data-list="openingBids">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Notrump Structure</h2>
+      <div class="repeat-list" id="list-notrumpConventions"></div>
+      <button type="button" class="add-btn" data-list="notrumpConventions">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Conventions</h2>
+      <div class="repeat-list" id="list-conventions"></div>
+      <button type="button" class="add-btn" data-list="conventions">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Opening Leads</h2>
+      <div class="repeat-list" id="list-leads"></div>
+      <button type="button" class="add-btn" data-list="leads">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Signals &amp; Discards</h2>
+      <div class="repeat-list" id="list-signals"></div>
+      <button type="button" class="add-btn" data-list="signals">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Defense to Opponents' Conventions</h2>
+      <div class="repeat-list" id="list-defenses"></div>
+      <button type="button" class="add-btn" data-list="defenses">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Doubles</h2>
+      <div class="repeat-list" id="list-doubles"></div>
+      <button type="button" class="add-btn" data-list="doubles">+ Add row</button>
+    </section>
+
+    <section class="panel">
+      <h2>Notes</h2>
+      <textarea id="f-notes" rows="3" class="full-width"></textarea>
+    </section>
+
+  </form>
+
+  <div id="pdfRoot" class="preview-column">
+    <section class="card-page front">
+      <header class="card-header">
+        <h1>Convention Card</h1>
+        <div class="pair-line" id="pairNamesFront"></div>
+        <div class="meta-line">
+          <span>System: <strong id="systemName"></strong></span>
+          <span>Date: <span id="cardDate"></span></span>
+        </div>
+      </header>
+
+      <section class="block">
+        <h2>General Approach</h2>
+        <p id="approachSummary"></p>
+        <table class="simple-table">
+          <thead><tr><th>Seat</th><th>1NT Range</th></tr></thead>
+          <tbody id="ntRangesBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Opening Bids</h2>
+        <table class="opening-bids-table">
+          <thead><tr><th>Bid</th><th>Meaning</th><th>Alert</th></tr></thead>
+          <tbody id="openingBidsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Notrump Structure</h2>
+        <ul class="checklist" id="ntConventionsList"></ul>
+      </section>
+
+      <section class="block">
+        <h2>Conventions</h2>
+        <ul class="checklist two-col" id="conventionsList"></ul>
+      </section>
+    </section>
+
+    <section class="card-page back">
+      <header class="card-header">
+        <h1>Convention Card — Defense &amp; Carding</h1>
+        <div class="pair-line" id="pairNamesBack"></div>
+      </header>
+
+      <section class="block">
+        <h2>Opening Leads</h2>
+        <table class="simple-table wide-note">
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Signals &amp; Discards</h2>
+        <table class="simple-table wide-note">
+          <tbody id="signalsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Defense to Opponents' Conventions</h2>
+        <table class="simple-table wide-note">
+          <tbody id="defensesBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Doubles</h2>
+        <table class="simple-table wide-note">
+          <tbody id="doublesBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Notes</h2>
+        <p id="notesText"></p>
+      </section>
+    </section>
+  </div>
+
+</div>
+
+<script src="vendor/html2pdf.bundle.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="app.js"></script>
+<script src="pdf-import.js"></script>
+<script src="pdf-export.js"></script>
+</body>
+</html>
