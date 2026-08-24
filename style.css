@@ -170,6 +170,46 @@ body {
   gap: 18px;
 }
 
+.suit-toolbar {
+  position: sticky;
+  top: 70px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.suit-toolbar-label {
+  font-size: 12px;
+  color: var(--sub);
+  white-space: nowrap;
+}
+
+.suit-btn {
+  font-size: 18px;
+  line-height: 1;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #f5f5f4;
+  cursor: pointer;
+}
+.suit-btn:hover { background: #eef3fa; }
+.suit-btn[data-suit="♦"], .suit-btn[data-suit="♥"] { color: var(--danger); }
+
+.suit-toolbar-hint {
+  font-size: 11px;
+  color: var(--sub);
+  font-style: italic;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
 .preview-column {
   flex: 1;
   min-width: 420px;

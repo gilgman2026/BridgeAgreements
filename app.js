@@ -59,6 +59,12 @@ const LIST_PATHS = {
   doubles: ["doubles"]
 };
 
+// Minimal blank shape — used internally by loadState() to backfill any
+// fields a loaded card is missing (e.g. an uploaded PDF from an older
+// version of this app). Keep this empty/blank; it is NOT what "Start New"
+// shows the user (see STARTER_TEMPLATE below) — if it held real example
+// content, loading an unrelated card that was merely missing one field would
+// incorrectly backfill that field with this data instead of a blank.
 const DEFAULT_CONFIG = {
   header: { pairNames: "", systemName: "", date: "" },
   generalApproach: { summary: "", notrumpRanges: [] },
@@ -70,6 +76,51 @@ const DEFAULT_CONFIG = {
   defenses: [],
   doubles: [],
   notes: ""
+};
+
+// What "Start New Card" actually populates the form with — a SAYC starter
+// card, edited via the local app's editor.html and handed off as a plain
+// data file. header.date is overridden to today's date at Start New time
+// regardless of what's here (see startNewCard), so it's left blank below.
+const STARTER_TEMPLATE = {
+  header: { pairNames: "", systemName: "", date: "" },
+  generalApproach: {
+    summary: "Standard American Yellow Card (SAYC)",
+    notrumpRanges: [
+      { seat: "All", range: "15–17, Balanced" }
+    ]
+  },
+  openingBids: [
+    { bid: "1♣", meaning: "3+ ♣, 12–19 points", alert: false },
+    { bid: "1♦", meaning: "4+ ♦, 12–19 points", alert: false },
+    { bid: "1♥ / 1♠", meaning: "5+ 1♥ / 1♠, 12–19 points", alert: false },
+    { bid: "1NT", meaning: "15–17 balanced, but could have a 5 card major", alert: true },
+    { bid: "2♣", meaning: "Strong, artificial, 22+ points", alert: false },
+    { bid: "2♦ / 2♥ / 2♠", meaning: "Weak two, 6-card suit, 6–10 pts", alert: false },
+    { bid: "2NT", meaning: "20–21 balanced, but could have a 5 card major", alert: false },
+    { bid: "3-level", meaning: "7-card suit: If the suit is ♣, it could be 6 card", alert: false },
+    { bid: "4-level", meaning: "8-card suit", alert: false }
+  ],
+  notrumpConventions: [
+    { label: "Stayman", checked: true, note: "2♣ promises a 4-card major & 8 points" },
+    { label: "Jacoby Transfers", checked: true, note: "♦=♥,  ♥=♠" }
+  ],
+  conventions: [
+    { label: "Roman Keycard Blackwood", checked: true, note: "4NT Initiates slam investigation for majors (1430)" },
+    { label: "Jacoby 2NT", checked: true, note: "2NT response to 1♥/♠ promising 4 cards and 14+ points" }
+  ],
+  leads: [
+    { label: "Vs. suit contracts", note: "A from AK, K from KQ, Card from partner's bid," },
+    { label: "Vs. notrump contracts", note: "4th from longest and strongest" }
+  ],
+  signals: [
+    { label: "Response to lead", note: "Standard (high = encourage)" }
+  ],
+  defenses: [],
+  doubles: [
+    { label: "Takeout doubles", note: "Promises 12points and support for the 3 unbid suits" }
+  ],
+  notes: "Fill in any additional partnership agreements here."
 };
 
 // Prefix used to find embedded card data inside an exported PDF's text
@@ -283,9 +334,15 @@ function hideLandingError() {
   document.getElementById("landingError").hidden = true;
 }
 
+function todayFormatted() {
+  return new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+
 function startNewCard() {
   currentFileHandle = null;
-  loadState(deepClone(DEFAULT_CONFIG));
+  const cfg = deepClone(STARTER_TEMPLATE);
+  cfg.header.date = todayFormatted();
+  loadState(cfg);
   showWorkspace();
 }
 
@@ -319,6 +376,36 @@ async function uploadExistingCard() {
   }
   document.getElementById("uploadFileInput").click();
 }
+
+// ---- Suit symbol toolbar ----
+//
+// Inserts a suit symbol into whichever text field was last focused, at that
+// field's cursor position. Tracking focus via delegation on `document` (not
+// wiring each field individually) means it works for every text field on
+// the page automatically, including repeat-row inputs created later by
+// renderList() — no extra wiring needed when a row is added.
+
+let lastFocusedField = null;
+
+document.addEventListener("focusin", e => {
+  if (e.target.matches('input[type="text"], textarea')) {
+    lastFocusedField = e.target;
+  }
+});
+
+function insertSuitSymbol(symbol) {
+  const field = lastFocusedField;
+  if (!field || !document.body.contains(field)) return; // e.g. row was removed
+  const start = field.selectionStart ?? field.value.length;
+  const end = field.selectionEnd ?? field.value.length;
+  field.setRangeText(symbol, start, end, "end");
+  field.focus();
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+document.querySelectorAll(".suit-btn").forEach(btn => {
+  btn.addEventListener("click", () => insertSuitSymbol(btn.dataset.suit));
+});
 
 document.getElementById("startNewBtn").addEventListener("click", startNewCard);
 document.getElementById("uploadBtn").addEventListener("click", uploadExistingCard);
