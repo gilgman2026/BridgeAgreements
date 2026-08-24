@@ -36,12 +36,20 @@ async function extractConfigFromPdf(file) {
     fullText += content.items.map(item => item.str).join("");
   }
 
-  const markerIndex = fullText.indexOf(DATA_MARKER);
+  // The marker + payload is written as a single long text run (see
+  // pdf-export.js), but PDF text-layer reconstruction can still insert
+  // stray whitespace when joining text items back together — and neither
+  // the marker nor base64 ever legitimately contain whitespace, so
+  // stripping all of it first is always safe and guards against a single
+  // inserted space silently truncating the match below.
+  const cleaned = fullText.replace(/\s+/g, "");
+
+  const markerIndex = cleaned.indexOf(DATA_MARKER);
   if (markerIndex === -1) {
     throw new Error("This PDF doesn't contain card data — please upload a PDF that was exported from this tool, or start a new card instead.");
   }
 
-  const match = fullText.slice(markerIndex + DATA_MARKER.length).match(/^[A-Za-z0-9+/=]+/);
+  const match = cleaned.slice(markerIndex + DATA_MARKER.length).match(/^[A-Za-z0-9+/=]+/);
   if (!match) {
     throw new Error("This PDF's embedded card data looks corrupted.");
   }

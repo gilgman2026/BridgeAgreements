@@ -22,6 +22,7 @@ function slugify(s) {
 function buildPdfBlob() {
   const front = document.querySelector("#pdfRoot .card-page.front");
   const back = document.querySelector("#pdfRoot .card-page.back");
+  const previewColumn = document.querySelector(".preview-column");
   const opt = {
     margin: 0,
     image: { type: "jpeg", quality: 0.98 },
@@ -30,15 +31,55 @@ function buildPdfBlob() {
   };
   const marker = encodeCardData(state);
 
+  // The live preview scrolls independently (.preview-column has its own
+  // overflow), and html2canvas captures a target element's on-screen
+  // position rather than its content in isolation — if the preview was
+  // scrolled when Export was clicked, the capture grabs whatever vertical
+  // slice happened to be in view instead of the element's actual top,
+  // producing a large blank gap before the real content. Resetting both the
+  // page's and the preview column's scroll position to the top right before
+  // capturing avoids this, then restores wherever the user had scrolled to.
+  const pageScrollY = window.scrollY;
+  const previewScrollTop = previewColumn ? previewColumn.scrollTop : 0;
+  window.scrollTo(0, 0);
+  if (previewColumn) previewColumn.scrollTop = 0;
+
+  const restoreScroll = () => {
+    window.scrollTo(0, pageScrollY);
+    if (previewColumn) previewColumn.scrollTop = previewScrollTop;
+  };
+
   return html2pdf().set(opt).from(front).toPdf()
     .get("pdf").then(pdf => { pdf.addPage(); })
     .from(back).toContainer().toCanvas().toPdf()
     .get("pdf").then(pdf => {
-      pdf.setFontSize(1);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text(marker, 0.1, 10.9); // near-invisible: 1pt, white, within page bounds
+      writeHiddenMarker(pdf, marker);
+      restoreScroll();
       return pdf.output("blob");
-    });
+    })
+    .catch(err => { restoreScroll(); throw err; });
+}
+
+// jsPDF silently drops any part of a single text() line that would extend
+// past the page's right edge — it does not wrap or throw. At 1pt font that's
+// only ~1000-1100 characters, far less than a filled-out card's encoded data
+// needs, and it was truncating mid-payload with no error at all (found by
+// inspecting an exported PDF directly: the base64 just stopped partway
+// through, breaking every re-upload). Fix: split the marker across multiple
+// short lines, each safely under that limit, stacked near the top of the
+// back page. pdf-import.js concatenates all text on the page regardless of
+// how many separate lines it came from, so this needs no matching change on
+// the read side beyond what was already there.
+function writeHiddenMarker(pdf, marker) {
+  const CHARS_PER_LINE = 600;
+  const START_Y = 0.15;
+  const LINE_HEIGHT = 0.04;
+  pdf.setFontSize(1);
+  pdf.setTextColor(255, 255, 255);
+  for (let i = 0; i * CHARS_PER_LINE < marker.length; i++) {
+    const chunk = marker.slice(i * CHARS_PER_LINE, (i + 1) * CHARS_PER_LINE);
+    pdf.text(chunk, 0.1, START_Y + i * LINE_HEIGHT);
+  }
 }
 
 function downloadBlob(blob, filename) {
