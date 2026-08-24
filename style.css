@@ -13,6 +13,15 @@
 
 * { box-sizing: border-box; }
 
+/* The browser's built-in [hidden]{display:none} rule loses to any author
+   rule of equal specificity that sets display on the same element (e.g.
+   .workspace-layout{display:flex}), regardless of declaration order — author
+   CSS always wins over the UA stylesheet. Without this, elements marked
+   hidden but also carrying a layout class (workspace, workspaceActions)
+   stayed visible the whole time. !important restores the actual guarantee
+   that [hidden] means hidden. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
