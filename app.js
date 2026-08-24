@@ -260,19 +260,33 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Traditional bridge suit coloring: hearts/diamonds red, clubs/spades left
+// as the surrounding text color. Runs after escaping, so it only ever
+// matches the literal ♥/♦ characters, never user-supplied markup — safe to
+// use anywhere card text is rendered as innerHTML. The PDF export captures
+// a screenshot of this rendered preview, so this coloring carries straight
+// through into the exported PDF too, not just the on-screen view.
+function colorizeSuits(escaped) {
+  return escaped.replace(/[♥♦]/g, m => `<span class="suit-red">${m}</span>`);
+}
+
+function renderText(s) {
+  return colorizeSuits(escapeHtml(s));
+}
+
 function checkbox(isChecked) {
   return `<span class="checkbox ${isChecked ? "yes" : ""}">${isChecked ? "☑" : "☐"}</span>`;
 }
 
 function renderChecklist(listEl, items) {
   listEl.innerHTML = items.map(item => `
-    <li>${checkbox(item.checked)} ${escapeHtml(item.label)}${item.note ? ` <span class="note">(${escapeHtml(item.note)})</span>` : ""}</li>
+    <li>${checkbox(item.checked)} ${renderText(item.label)}${item.note ? ` <span class="note">(${renderText(item.note)})</span>` : ""}</li>
   `).join("");
 }
 
 function renderNoteRows(bodyEl, items) {
   bodyEl.innerHTML = items.map(item => `
-    <tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(item.note)}</td></tr>
+    <tr><td>${renderText(item.label)}</td><td>${renderText(item.note)}</td></tr>
   `).join("");
 }
 
@@ -280,20 +294,20 @@ function renderCard() {
   const cfg = state;
   if (!cfg) return;
 
-  document.getElementById("pairNamesFront").textContent = cfg.header.pairNames;
-  document.getElementById("pairNamesBack").textContent = cfg.header.pairNames;
-  document.getElementById("systemName").textContent = cfg.header.systemName;
+  document.getElementById("pairNamesFront").innerHTML = renderText(cfg.header.pairNames);
+  document.getElementById("pairNamesBack").innerHTML = renderText(cfg.header.pairNames);
+  document.getElementById("systemName").innerHTML = renderText(cfg.header.systemName);
   document.getElementById("cardDate").textContent = cfg.header.date || "________";
 
-  document.getElementById("approachSummary").textContent = cfg.generalApproach.summary;
+  document.getElementById("approachSummary").innerHTML = renderText(cfg.generalApproach.summary);
   document.getElementById("ntRangesBody").innerHTML = cfg.generalApproach.notrumpRanges.map(r => `
-    <tr><td>${escapeHtml(r.seat)}</td><td>${escapeHtml(r.range)}</td></tr>
+    <tr><td>${renderText(r.seat)}</td><td>${renderText(r.range)}</td></tr>
   `).join("");
 
   document.getElementById("openingBidsBody").innerHTML = cfg.openingBids.map(row => `
     <tr>
-      <td>${escapeHtml(row.bid)}</td>
-      <td>${escapeHtml(row.meaning)}</td>
+      <td>${renderText(row.bid)}</td>
+      <td>${renderText(row.meaning)}</td>
       <td>${checkbox(row.alert)}</td>
     </tr>
   `).join("");
@@ -306,7 +320,7 @@ function renderCard() {
   renderNoteRows(document.getElementById("defensesBody"), cfg.defenses);
   renderNoteRows(document.getElementById("doublesBody"), cfg.doubles);
 
-  document.getElementById("notesText").textContent = cfg.notes || "";
+  document.getElementById("notesText").innerHTML = renderText(cfg.notes || "");
 }
 
 // ---- Landing screen / workspace switching ----

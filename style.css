@@ -184,7 +184,8 @@ body {
 }
 
 .suit-toolbar-label {
-  font-size: 12px;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--sub);
   white-space: nowrap;
 }
@@ -201,14 +202,6 @@ body {
 }
 .suit-btn:hover { background: #eef3fa; }
 .suit-btn[data-suit="♦"], .suit-btn[data-suit="♥"] { color: var(--danger); }
-
-.suit-toolbar-hint {
-  font-size: 11px;
-  color: var(--sub);
-  font-style: italic;
-  white-space: nowrap;
-  margin-left: auto;
-}
 
 .preview-column {
   flex: 1;
@@ -434,6 +427,8 @@ textarea.full-width { width: 100%; }
 .checkbox.yes { color: var(--check-yes); font-weight: bold; }
 
 .note { color: var(--sub); font-style: italic; }
+
+.suit-red { color: var(--danger); }
 
 @media print {
   .no-print { display: none; }
