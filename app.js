@@ -97,7 +97,7 @@ const STARTER_TEMPLATE = {
     { bid: "1NT", meaning: "15–17 balanced, but could have a 5 card major", alert: true },
     { bid: "2♣", meaning: "Strong, artificial, 22+ points", alert: false },
     { bid: "2♦ / 2♥ / 2♠", meaning: "Weak two, 6-card suit, 6–10 pts", alert: false },
-    { bid: "2NT", meaning: "20–21 balanced, but could have a 5 card major", alert: false },
+    { bid: "2NT", meaning: "20–21 balanced, but could have a 5 card major", alert: true },
     { bid: "3-level", meaning: "7-card suit: If the suit is ♣, it could be 6 card", alert: false },
     { bid: "4-level", meaning: "8-card suit", alert: false }
   ],
