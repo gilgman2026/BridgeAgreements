@@ -103,7 +103,8 @@ function showExportStatus(msg) {
 }
 
 async function exportPdf() {
-  const filename = `convention-card-${slugify(state.header.pairNames) || "card"}.pdf`;
+  const slug = slugify(state.header.pairNames);
+  const filename = slug ? `convention-card-${slug}.pdf` : "convention-card.pdf";
   const blob = await buildPdfBlob();
 
   if (currentFileHandle) {

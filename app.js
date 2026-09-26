@@ -85,15 +85,15 @@ const DEFAULT_CONFIG = {
 const STARTER_TEMPLATE = {
   header: { pairNames: "", systemName: "", date: "" },
   generalApproach: {
-    summary: "Standard American Yellow Card (SAYC)",
+    summary: "Standard American",
     notrumpRanges: [
       { seat: "All", range: "15–17, Balanced" }
     ]
   },
   openingBids: [
-    { bid: "1♣", meaning: "3+ ♣, 12–19 points", alert: false },
-    { bid: "1♦", meaning: "4+ ♦, 12–19 points", alert: false },
-    { bid: "1♥ / 1♠", meaning: "5+ ♥/♠, 12–19 points", alert: false },
+    { bid: "1♣", meaning: "3+ ♣, 12–21 points", alert: false },
+    { bid: "1♦", meaning: "4+ ♦, 12–21 points", alert: false },
+    { bid: "1♥ / 1♠", meaning: "5+ ♥/♠, 12–21 points", alert: false },
     { bid: "1NT", meaning: "15–17 balanced, but could have a 5 card major", alert: true },
     { bid: "2♣", meaning: "Strong, artificial, 22+ points", alert: false },
     { bid: "2♦ / 2♥ / 2♠", meaning: "Weak two, 6-card suit, 6–10 pts", alert: false },
@@ -118,7 +118,7 @@ const STARTER_TEMPLATE = {
   ],
   defenses: [],
   doubles: [
-    { label: "Takeout doubles", note: "Promises 12points and support for the 3 unbid suits" }
+    { label: "Takeout doubles", note: "Promises 12 points and support for the 3 unbid suits" }
   ],
   notes: "Fill in any additional partnership agreements here."
 };
