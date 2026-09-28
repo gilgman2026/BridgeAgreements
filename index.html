@@ -24,10 +24,17 @@
     <div class="landing-actions">
       <button type="button" id="startNewBtn" class="landing-btn primary">Start a New Card</button>
       <button type="button" id="uploadBtn" class="landing-btn">Edit an Existing Card (PDF)</button>
+      <button type="button" id="convertAcblBtn" class="landing-btn">Convert to ACBL Card (PDF)</button>
       <input type="file" id="uploadFileInput" accept=".pdf,application/pdf" hidden>
+      <input type="file" id="acblFileInput" accept=".pdf,application/pdf" hidden>
     </div>
     <p id="landingError" class="landing-error" hidden></p>
+    <p id="landingStatus" class="landing-status" hidden></p>
   </div>
+</div>
+
+<div id="acblWizard" class="acbl-wizard-overlay no-print" hidden>
+  <div class="acbl-wizard-panel" id="acblWizardPanel"></div>
 </div>
 
 <div id="workspace" class="workspace-layout" hidden>
@@ -197,5 +204,9 @@
 <script src="app.js"></script>
 <script src="pdf-import.js"></script>
 <script src="pdf-export.js"></script>
+<script src="acbl-schema.js"></script>
+<script src="acbl-render.js"></script>
+<script src="acbl-export.js"></script>
+<script src="acbl-wizard.js"></script>
 </body>
 </html>
