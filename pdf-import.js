@@ -50,7 +50,19 @@ async function extractMarkedDataFromPdf(file, marker, notFoundMessage) {
 
   const markerIndex = cleaned.indexOf(marker);
   if (markerIndex === -1) {
-    throw new Error(notFoundMessage);
+    // Diagnostic detail appended so a report of this error is actionable
+    // without needing browser dev tools: how much text actually came back,
+    // and whether the OTHER marker (regular card vs ACBL card) was found
+    // instead, which would mean the wrong upload button was used.
+    const otherMarker = marker === DATA_MARKER ? ACBL_DATA_MARKER : DATA_MARKER;
+    const foundOther = cleaned.indexOf(otherMarker) !== -1;
+    const snippet = cleaned.slice(0, 80);
+    throw new Error(
+      notFoundMessage +
+      `\n\n[diagnostic] pages: ${doc.numPages}, extracted chars: ${cleaned.length}` +
+      (foundOther ? ", found the OTHER file type's marker instead (wrong upload button?)" : "") +
+      (cleaned.length ? `, starts with: "${snippet}"` : ", no text was extracted at all")
+    );
   }
 
   const match = cleaned.slice(markerIndex + marker.length).match(/^[A-Za-z0-9+/=]+/);
