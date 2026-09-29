@@ -1,15 +1,19 @@
-// Step-through wizard for converting a completed card to the standard ACBL
-// convention-card format. Entry point is the 3rd landing button: it re-uses
-// the existing upload/extractConfigFromPdf path (see app.js/pdf-import.js)
-// to load a completed card's data, pre-fills whatever the hint matcher in
-// acbl-schema.js can confidently suggest, then walks the user through every
-// ACBL section one at a time so they can fill in (or skip) the rest.
+// Step-through wizard for the ACBL convention-card format. Two entry points,
+// both landing-page buttons:
+//
+//  - "Create ACBL Card": uploads a completed Agreement (this tool's regular
+//    card PDF), pre-fills whatever the hint matcher in acbl-schema.js can
+//    confidently suggest from it, then walks the user through every ACBL
+//    section so they can fill in (or skip) the rest.
+//  - "Edit ACBL Card": uploads a previously-generated ACBL PDF (from either
+//    of these two flows) and restores its exact answers, since those are
+//    embedded in the PDF the same way the regular card round-trips (see
+//    acbl-export.js / extractAcblConfigFromPdf in pdf-import.js).
 //
 // This never touches `state` / the regular editor — acblState is a wholly
-// separate object, and generation is one-shot (see acbl-export.js).
+// separate object.
 
 let acblState = null;
-let acblSourceState = null;
 let acblStepIndex = 0;
 
 function ensureAcblSection(sectionId) {
@@ -183,8 +187,15 @@ function renderAcblWizardStep() {
   panel.appendChild(footer);
 }
 
-function openAcblWizard(sourceState) {
-  acblSourceState = sourceState;
+function showAcblWizard() {
+  acblStepIndex = 0;
+  document.getElementById("acblWizard").hidden = false;
+  renderAcblWizardStep();
+}
+
+// "Create ACBL Card": build a fresh acblState from an Agreement's data,
+// pre-filled with whatever the hint matcher can confidently suggest.
+function openAcblWizardFromAgreement(sourceState) {
   acblState = defaultAcblState();
 
   const { hints, extra } = computeAcblHints(sourceState);
@@ -193,9 +204,13 @@ function openAcblWizard(sourceState) {
   });
   if (extra.length) acblState.additionalNotes.text = extra.join("\n");
 
-  acblStepIndex = 0;
-  document.getElementById("acblWizard").hidden = false;
-  renderAcblWizardStep();
+  showAcblWizard();
+}
+
+// "Edit ACBL Card": restore an exact, previously-answered acblState.
+function openAcblWizardFromAcblPdf(loadedAcblState) {
+  acblState = mergeAcblState(loadedAcblState);
+  showAcblWizard();
 }
 
 function closeAcblWizard() {
@@ -205,7 +220,7 @@ function closeAcblWizard() {
 async function finishAcblWizard() {
   closeAcblWizard();
   try {
-    const filename = await exportAcblPdf(acblState, acblSourceState);
+    const filename = await exportAcblPdf(acblState);
     showLandingStatus(`Downloaded ${filename}`);
   } catch (err) {
     showLandingError("Could not generate the ACBL PDF: " + err.message);
@@ -225,36 +240,53 @@ function hideLandingStatus() {
   document.getElementById("landingStatus").hidden = true;
 }
 
-// ---- Landing entry point: upload a completed card, then open the wizard ----
+// ---- Landing entry points ----
+//
+// Both follow the same shape: open a native/file-input picker, read the
+// PDF, hand its data to the matching wizard opener above. Factored into one
+// helper (openFileThen) parameterized by which extractor/opener/input to
+// use, rather than duplicating the picker-vs-fallback-input dance twice.
 
-async function handleAcblUpload(file) {
+async function openFileThen(inputId, extractFn, openFn) {
   hideLandingError();
   hideLandingStatus();
-  try {
-    const cfg = await extractConfigFromPdf(file);
-    openAcblWizard(cfg);
-  } catch (err) {
-    showLandingError(err.message);
-  }
-}
 
-async function startAcblConversion() {
+  const handleFile = async file => {
+    try {
+      const data = await extractFn(file);
+      openFn(data);
+    } catch (err) {
+      showLandingError(err.message);
+    }
+  };
+
   if ("showOpenFilePicker" in window) {
     try {
       const [handle] = await window.showOpenFilePicker({
         types: [{ description: "PDF file", accept: { "application/pdf": [".pdf"] } }]
       });
       const file = await handle.getFile();
-      await handleAcblUpload(file);
+      await handleFile(file);
     } catch (err) {
       if (err.name !== "AbortError") showLandingError("Could not open that file:\n" + err.message);
     }
     return;
   }
-  document.getElementById("acblFileInput").click();
+
+  const input = document.getElementById(inputId);
+  const onChange = e => {
+    input.removeEventListener("change", onChange);
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+    input.value = "";
+  };
+  input.addEventListener("change", onChange);
+  input.click();
 }
 
-document.getElementById("convertAcblBtn").addEventListener("click", startAcblConversion);
-document.getElementById("acblFileInput").addEventListener("change", e => {
-  if (e.target.files[0]) handleAcblUpload(e.target.files[0]);
+document.getElementById("convertAcblBtn").addEventListener("click", () => {
+  openFileThen("acblFileInput", extractConfigFromPdf, openAcblWizardFromAgreement);
+});
+
+document.getElementById("editAcblBtn").addEventListener("click", () => {
+  openFileThen("editAcblFileInput", extractAcblConfigFromPdf, openAcblWizardFromAcblPdf);
 });

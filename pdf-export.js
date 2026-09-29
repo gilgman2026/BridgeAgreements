@@ -4,8 +4,8 @@
 
 const PDF_FILE_TYPES = [{ description: "PDF file", accept: { "application/pdf": [".pdf"] } }];
 
-function encodeCardData(cfg) {
-  return DATA_MARKER + btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+function encodeCardData(cfg, marker) {
+  return (marker || DATA_MARKER) + btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
 }
 
 function slugify(s) {
