@@ -1,17 +1,15 @@
 // Step-through wizard for the ACBL convention-card format. Two entry points,
 // both landing-page buttons:
 //
-//  - "Create ACBL Card": uploads a completed Agreement (this tool's regular
-//    card PDF), pre-fills whatever the hint matcher in acbl-schema.js can
-//    confidently suggest from it, then walks the user through every ACBL
-//    section so they can fill in (or skip) the rest.
+//  - "Create ACBL Card": opens a wholly blank wizard.
 //  - "Edit ACBL Card": uploads a previously-generated ACBL PDF (from either
 //    of these two flows) and restores its exact answers, since those are
-//    embedded in the PDF the same way the regular card round-trips (see
-//    acbl-export.js / extractAcblConfigFromPdf in pdf-import.js).
+//    embedded in the PDF via a round-trip marker (see acbl-export.js /
+//    extractAcblConfigFromPdf in pdf-import.js).
 //
-// This never touches `state` / the regular editor — acblState is a wholly
-// separate object.
+// The regular Agreement editor (app.js / pdf-export.js / pdf-import.js) is
+// unrelated and untouched — its landing buttons are just hidden for now,
+// not removed, in case that flow comes back later.
 
 let acblState = null;
 let acblStepIndex = 0;
@@ -193,17 +191,9 @@ function showAcblWizard() {
   renderAcblWizardStep();
 }
 
-// "Create ACBL Card": build a fresh acblState from an Agreement's data,
-// pre-filled with whatever the hint matcher can confidently suggest.
-function openAcblWizardFromAgreement(sourceState) {
+// "Create ACBL Card": a wholly blank wizard.
+function openAcblWizardFromScratch() {
   acblState = defaultAcblState();
-
-  const { hints, extra } = computeAcblHints(sourceState);
-  Object.keys(hints).forEach(sectionId => {
-    Object.assign(acblState[sectionId], hints[sectionId]);
-  });
-  if (extra.length) acblState.additionalNotes.text = extra.join("\n");
-
   showAcblWizard();
 }
 
@@ -284,7 +274,9 @@ async function openFileThen(inputId, extractFn, openFn) {
 }
 
 document.getElementById("convertAcblBtn").addEventListener("click", () => {
-  openFileThen("acblFileInput", extractConfigFromPdf, openAcblWizardFromAgreement);
+  hideLandingError();
+  hideLandingStatus();
+  openAcblWizardFromScratch();
 });
 
 document.getElementById("editAcblBtn").addEventListener("click", () => {

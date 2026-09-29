@@ -128,7 +128,7 @@ const ACBL_IMAGE_POSITIONS = {
   notrumpOpening: {
     range1: { from: { x: 292.2, y: 123.4 }, to: { x: 334.3, y: 123.4 } },
     range2: { from: { x: 292.2, y: 135.4 }, to: { x: 334.3, y: 135.4 } },
-    fiveCardMajorCommon: { x: 363.4, y: 142.9 },
+    fiveCardMajorCommon: { x: 363.4, y: 146.7 },
     systemOnOverInterference: { x: 340.1, y: 156.4 },
     twoClub: { stayman: { x: 335.3, y: 166.2 }, puppet: { x: 366.9, y: 166.2 } },
     twoDiamond: { transferHearts: { x: 350.0, y: 177.1 }, forcingStayman: { x: 360.8, y: 187.9 } },

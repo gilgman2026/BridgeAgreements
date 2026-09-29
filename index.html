@@ -20,14 +20,13 @@
 <div id="landing">
   <div class="landing-card">
     <h1>Bridge Convention Card Maker</h1>
-    <p class="landing-sub">Fill out a partnership's system and export it as a printable PDF.</p>
+    <p class="landing-sub">Create or edit a standard ACBL convention card.</p>
     <div class="landing-actions">
-      <button type="button" id="startNewBtn" class="landing-btn primary">Draft New Agreement</button>
-      <button type="button" id="uploadBtn" class="landing-btn">Edit Existing Agreement</button>
-      <button type="button" id="convertAcblBtn" class="landing-btn">Create ACBL Card</button>
+      <button type="button" id="convertAcblBtn" class="landing-btn primary">Create ACBL Card</button>
       <button type="button" id="editAcblBtn" class="landing-btn">Edit ACBL Card</button>
+      <button type="button" id="startNewBtn" class="landing-btn" hidden>Draft New Agreement</button>
+      <button type="button" id="uploadBtn" class="landing-btn" hidden>Edit Existing Agreement</button>
       <input type="file" id="uploadFileInput" accept=".pdf,application/pdf" hidden>
-      <input type="file" id="acblFileInput" accept=".pdf,application/pdf" hidden>
       <input type="file" id="editAcblFileInput" accept=".pdf,application/pdf" hidden>
     </div>
     <p id="landingError" class="landing-error" hidden></p>
