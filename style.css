@@ -607,10 +607,12 @@ textarea.full-width { width: 100%; }
 .acbl-ov-mark {
   width: 5.85pt;
   height: 5.85pt;
-  font-size: 6.5pt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5.6pt;
   font-weight: 700;
-  line-height: 5.85pt;
-  text-align: center;
+  line-height: 1;
 }
 
 .acbl-notes-page {
