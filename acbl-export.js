@@ -2,9 +2,12 @@
 // html2pdf pipeline pdf-export.js already uses for the regular card.
 //
 // The reference card's own page size is 8in x 8.5in (not standard letter),
-// so jsPDF is given that as a custom format. When there's overflow content
-// (the "Additional Notes" catch-all), it's captured as a second page in the
-// same PDF, the same two-pass pattern pdf-export.js uses for front/back.
+// so jsPDF is given that as a custom format. A second page (carrying
+// "Additional Notes" if there are any, otherwise blank) is always captured
+// too — the hidden data marker below is written there rather than on the
+// image page; see the comment on renderAcblNotesPage in acbl-render.js for
+// why. Two-pass capture is the same pattern pdf-export.js uses for
+// front/back.
 //
 // The generated PDF also embeds its own acblState as hidden text (same
 // technique as pdf-export.js's regular card, different marker — see
@@ -40,12 +43,10 @@ async function exportAcblPdf(acblState) {
     jsPDF: { unit: "in", format: [8, 8.5], orientation: "portrait" }
   };
 
-  let chain = html2pdf().set(opt).from(imagePage).toPdf();
-  if (notesPage) {
-    chain = chain.get("pdf").then(pdf => { pdf.addPage([8, 8.5], "portrait"); })
-      .from(notesPage).toContainer().toCanvas().toPdf();
-  }
-  const pdf = await chain.get("pdf");
+  const pdf = await html2pdf().set(opt).from(imagePage).toPdf()
+    .get("pdf").then(pdf => { pdf.addPage([8, 8.5], "portrait"); })
+    .from(notesPage).toContainer().toCanvas().toPdf()
+    .get("pdf");
 
   writeHiddenMarker(pdf, encodeCardData(acblState, ACBL_DATA_MARKER));
   const blob = pdf.output("blob");

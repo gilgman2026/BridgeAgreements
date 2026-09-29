@@ -70,12 +70,21 @@ function buildPdfBlob() {
 // back page. pdf-import.js concatenates all text on the page regardless of
 // how many separate lines it came from, so this needs no matching change on
 // the read side beyond what was already there.
+// setTextColor alone wasn't enough to make this text reliably invisible —
+// confirmed by sampling actual rendered pixels of an exported ACBL card,
+// which came back near-black, not white, right where the marker was
+// written. jsPDF's text() applies the current draw (stroke) color as well
+// as the fill color unless told otherwise, and the draw color defaults to
+// black; at 1pt font, that stroke outline is what was showing through as
+// faint but visible marks. Setting the draw color to white too closes that
+// gap regardless of which render path a given page went through.
 function writeHiddenMarker(pdf, marker) {
   const CHARS_PER_LINE = 600;
   const START_Y = 0.15;
   const LINE_HEIGHT = 0.04;
   pdf.setFontSize(1);
   pdf.setTextColor(255, 255, 255);
+  pdf.setDrawColor(255, 255, 255);
   for (let i = 0; i * CHARS_PER_LINE < marker.length; i++) {
     const chunk = marker.slice(i * CHARS_PER_LINE, (i + 1) * CHARS_PER_LINE);
     pdf.text(chunk, 0.1, START_Y + i * LINE_HEIGHT);
