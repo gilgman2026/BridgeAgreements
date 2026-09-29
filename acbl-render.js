@@ -1,40 +1,53 @@
-// Renders the ACBL-shaped print layout from an acblState object built by
-// acbl-wizard.js. Reuses escapeHtml/renderText/checkbox from app.js — same
-// suit-coloring and escaping rules as the regular card's preview.
+// Renders acblState onto an exact image of the reference ACBL card
+// (assets/acbl-card-front.png) via absolutely-positioned overlays, using
+// the coordinates measured in acbl-image-positions.js. A second, plain page
+// carries anything that doesn't fit on the card itself (the "Additional
+// Notes" catch-all from the hint matcher) — only added when there's
+// something in it.
+//
+// Reuses escapeHtml/renderText/checkbox from app.js for consistent suit
+// coloring and escaping.
 
-function renderAcblFieldRow(field, value) {
+function overlaySpan(x, y, text, extraStyle) {
+  if (text === "" || text == null) return "";
+  return `<span class="acbl-ov acbl-ov-text" style="left:${x}pt;top:${y}pt;${extraStyle || ""}">${renderText(text)}</span>`;
+}
+
+function overlayMark(x, y) {
+  return `<span class="acbl-ov acbl-ov-mark" style="left:${x}pt;top:${y}pt;">X</span>`;
+}
+
+function renderFieldOverlay(field, value, pos) {
+  if (!pos) return "";
   switch (field.type) {
     case "text":
-      return `<div class="acbl-row"><span class="lbl">${escapeHtml(field.label)}:</span> ${renderText(value || "")}</div>`;
-    case "textarea":
-      if (!value) return "";
-      return `<div class="acbl-row">${renderText(value).replace(/\n/g, "<br>")}</div>`;
+      return overlaySpan(pos.x, pos.y, value);
     case "checkbox":
-      return `<div class="acbl-row">${checkbox(!!value)} ${escapeHtml(field.label)}</div>`;
+      return value ? overlayMark(pos.x, pos.y) : "";
     case "checkboxText": {
       const v = value || { checked: false, text: "" };
-      return `<div class="acbl-row">${checkbox(!!v.checked)} ${escapeHtml(field.label)} ${renderText(v.text || "")}</div>`;
+      return (v.checked ? overlayMark(pos.box.x, pos.box.y) : "") + overlaySpan(pos.text.x, pos.text.y, v.text);
     }
     case "range": {
       const v = value || { from: "", to: "" };
-      const label = field.label ? `<span class="lbl">${escapeHtml(field.label)}:</span> ` : "";
-      return `<div class="acbl-row">${label}${renderText(v.from || "___")} to ${renderText(v.to || "___")}</div>`;
+      return overlaySpan(pos.from.x, pos.from.y, v.from) + overlaySpan(pos.to.x, pos.to.y, v.to);
     }
     case "checklist": {
       const v = value || {};
-      const label = field.label ? `<span class="lbl">${escapeHtml(field.label)}:</span> ` : "";
-      const opts = field.options.map(o => `<span class="opt">${checkbox(!!v[o.value])} ${escapeHtml(o.label)}</span>`).join("");
-      return `<div class="acbl-row">${label}${opts}</div>`;
+      return field.options.map(o => (v[o.value] && pos[o.value]) ? overlayMark(pos[o.value].x, pos[o.value].y) : "").join("");
     }
     default:
       return "";
   }
 }
 
-function renderAcblBox(section, acblState) {
-  const values = acblState[section.id] || {};
-  const rows = section.fields.map(f => renderAcblFieldRow(f, values[f.key])).join("");
-  return `<div class="acbl-box"><h4>${escapeHtml(section.title)}</h4>${rows}</div>`;
+function renderAcblNotesPage(text) {
+  if (!text || !text.trim()) return "";
+  return `
+    <div class="acbl-page acbl-notes-page">
+      <h4>Additional Notes (carried over from your existing card)</h4>
+      <div class="acbl-notes-body">${renderText(text).replace(/\n/g, "<br>")}</div>
+    </div>`;
 }
 
 function renderAcblCard(acblState) {
@@ -48,30 +61,24 @@ function renderAcblCard(acblState) {
     document.body.appendChild(clip);
   }
 
-  const columns = { left: [], middle: [], right: [] };
-  let bottomHtml = "";
+  let overlays = "";
   ACBL_SECTIONS.forEach(section => {
-    if (section.column === "bottom") {
-      const values = acblState[section.id] || {};
-      const hasContent = section.fields.some(f => {
-        const v = values[f.key];
-        return typeof v === "string" ? v.trim() : !!v;
-      });
-      if (hasContent) bottomHtml = renderAcblBox(section, acblState);
-      return;
-    }
-    columns[section.column].push(renderAcblBox(section, acblState));
+    if (section.column === "bottom") return;
+    const values = acblState[section.id] || {};
+    const positions = ACBL_IMAGE_POSITIONS[section.id] || {};
+    section.fields.forEach(field => {
+      overlays += renderFieldOverlay(field, values[field.key], positions[field.key]);
+    });
   });
 
+  const notesText = (acblState.additionalNotes || {}).text || "";
+
   root.innerHTML = `
-    <div class="acbl-page">
-      <div class="acbl-grid">
-        <div class="acbl-column">${columns.left.join("")}</div>
-        <div class="acbl-column">${columns.middle.join("")}</div>
-        <div class="acbl-column">${columns.right.join("")}</div>
-      </div>
-      <div class="acbl-notes-box">${bottomHtml}</div>
-    </div>`;
+    <div class="acbl-page acbl-image-page">
+      <img class="acbl-bg" src="assets/acbl-card-front.png" alt="">
+      ${overlays}
+    </div>
+    ${renderAcblNotesPage(notesText)}`;
 
   return root;
 }
