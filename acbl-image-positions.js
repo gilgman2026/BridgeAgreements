@@ -71,15 +71,15 @@ const ACBL_IMAGE_POSITIONS = {
     primarySignal: { attitude: { x: 40.3, y: 570.7 }, count: { x: 79.7, y: 570.7 }, suitPreference: { x: 147.9, y: 570.7 } }
   },
   defensiveCarding: {
-    suits: { standard: { x: 242.7, y: 417.1 }, upsideDown: { x: 242.7, y: 461.2 } },
-    nt: { standard: { x: 268.7, y: 417.1 }, upsideDown: { x: 268.7, y: 461.2 } },
-    except: { x: 170.7, y: 436.6 }
+    suits: { standard: { x: 242.7, y: 417.8 }, upsideDownCount: { x: 243.3, y: 471.8 }, upsideDownAttitude: { x: 243.3, y: 481.6 } },
+    nt: { standard: { x: 268.7, y: 417.8 }, upsideDownCount: { x: 269.3, y: 471.8 }, upsideDownAttitude: { x: 269.3, y: 481.6 } },
+    except: { box: { x: 207.6, y: 427.6 }, text: { x: 170.7, y: 436.6 } }
   },
   firstDiscard: {
-    signal: { lavinthal: { x: 242.7, y: 510.3 }, oddEven: { x: 242.7, y: 520.0 } }
+    signal: { lavinthal: { x: 242.7, y: 511.0 }, oddEven: { x: 242.7, y: 520.8 } }
   },
   otherCarding: {
-    items: { smithEcho: { x: 242.7, y: 551.5 }, trumpSuitPref: { x: 242.7, y: 559.4 }, fosterEcho: { x: 242.7, y: 571.1 } },
+    items: { smithEcho: { x: 242.7, y: 552.2 }, trumpSuitPref: { x: 242.7, y: 562.0 }, fosterEcho: { x: 242.7, y: 571.8 } },
     specialCarding: { x: 161.1, y: 586.4 },
     pleaseAsk: { x: 152.0, y: 541.8 }
   },

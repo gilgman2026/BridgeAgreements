@@ -117,12 +117,12 @@ const ACBL_SECTIONS = [
     id: "defensiveCarding", title: "Defensive Carding", column: "left",
     fields: [
       { key: "suits", type: "checklist", label: "vs Suits", options: [
-        { value: "standard", label: "Standard" }, { value: "upsideDown", label: "Upside-Down" }
+        { value: "standard", label: "Standard" }, { value: "upsideDownCount", label: "Upside-Down (count)" }, { value: "upsideDownAttitude", label: "Upside-Down (attitude)" }
       ] },
       { key: "nt", type: "checklist", label: "vs Notrump", options: [
-        { value: "standard", label: "Standard" }, { value: "upsideDown", label: "Upside-Down" }
+        { value: "standard", label: "Standard" }, { value: "upsideDownCount", label: "Upside-Down (count)" }, { value: "upsideDownAttitude", label: "Upside-Down (attitude)" }
       ] },
-      { key: "except", type: "text", label: "Except" }
+      { key: "except", type: "checkboxText", label: "Except", textPlaceholder: "detail" }
     ]
   },
   {
@@ -411,7 +411,8 @@ const ACBL_KEYWORD_HINTS = [
   { re: /attitude/i, apply: h => h.checklistOpt("leads", "primarySignal", "attitude") },
   { re: /\bcount\b/i, apply: h => h.checklistOpt("leads", "primarySignal", "count") },
   { re: /suit\s*pref/i, apply: h => h.checklistOpt("leads", "primarySignal", "suitPreference") },
-  { re: /upside[- ]?down/i, apply: h => { h.checklistOpt("defensiveCarding", "suits", "upsideDown"); h.checklistOpt("defensiveCarding", "nt", "upsideDown"); } },
+  { re: /upside[- ]?down.*attitude|attitude.*upside[- ]?down/i, apply: h => { h.checklistOpt("defensiveCarding", "suits", "upsideDownAttitude"); h.checklistOpt("defensiveCarding", "nt", "upsideDownAttitude"); } },
+  { re: /upside[- ]?down.*count|count.*upside[- ]?down/i, apply: h => { h.checklistOpt("defensiveCarding", "suits", "upsideDownCount"); h.checklistOpt("defensiveCarding", "nt", "upsideDownCount"); } },
   { re: /\bstandard\b/i, apply: h => { h.checklistOpt("defensiveCarding", "suits", "standard"); h.checklistOpt("defensiveCarding", "nt", "standard"); } },
   { re: /lavinthal/i, apply: h => h.checklistOpt("firstDiscard", "signal", "lavinthal") },
   { re: /odd[\s/-]*even/i, apply: h => h.checklistOpt("firstDiscard", "signal", "oddEven") },
