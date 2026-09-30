@@ -41,20 +41,16 @@ function renderFieldOverlay(field, value, pos) {
   }
 }
 
-// Always rendered as its own page — even with no notes text — because the
-// hidden data-marker text (see acbl-export.js) has to be written somewhere,
-// and writing it directly onto the image page has shown a real jsPDF quirk:
-// at 1pt font size, the "invisible" marker text doesn't reliably render as
-// pure white, and lands visibly on top of the printed card wherever it
-// happens to overlap dense content. Keeping it off the image page entirely
-// sidesteps that regardless of the exact cause. A blank second page when
-// there's no additional notes is a minor cosmetic cost for that guarantee.
+// Only rendered when there's actual overflow text — the hidden data marker
+// no longer needs this page to hide in (see the acbl-card-body comment in
+// style.css and ACBL_MARGIN_IN in acbl-export.js), so an empty notes page
+// would just be a stray blank page for no reason.
 function renderAcblNotesPage(text) {
-  const hasText = text && text.trim();
+  if (!text || !text.trim()) return "";
   return `
     <div class="acbl-page acbl-notes-page">
-      ${hasText ? `<h4>Additional Notes (carried over from your existing card)</h4>
-      <div class="acbl-notes-body">${renderText(text).replace(/\n/g, "<br>")}</div>` : ""}
+      <h4>Additional Notes (carried over from your existing card)</h4>
+      <div class="acbl-notes-body">${renderText(text).replace(/\n/g, "<br>")}</div>
     </div>`;
 }
 
@@ -83,8 +79,10 @@ function renderAcblCard(acblState) {
 
   root.innerHTML = `
     <div class="acbl-page acbl-image-page">
-      <img class="acbl-bg" src="assets/acbl-card-front.png" alt="">
-      ${overlays}
+      <div class="acbl-card-body">
+        <img class="acbl-bg" src="assets/acbl-card-front.png" alt="">
+        ${overlays}
+      </div>
     </div>
     ${renderAcblNotesPage(notesText)}`;
 

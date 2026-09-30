@@ -66,10 +66,12 @@ function buildPdfBlob() {
 // needs, and it was truncating mid-payload with no error at all (found by
 // inspecting an exported PDF directly: the base64 just stopped partway
 // through, breaking every re-upload). Fix: split the marker across multiple
-// short lines, each safely under that limit, stacked near the top of the
-// back page. pdf-import.js concatenates all text on the page regardless of
-// how many separate lines it came from, so this needs no matching change on
-// the read side beyond what was already there.
+// short lines, each safely under that limit, stacked starting at `startY`
+// inches from the page top (defaults to 0.15in, near the top of the back
+// page, for the regular card's own usage). pdf-import.js concatenates all
+// text on the page regardless of how many separate lines it came from, so
+// this needs no matching change on the read side beyond what was already
+// there.
 // setTextColor alone wasn't enough to make this text reliably invisible —
 // confirmed by sampling actual rendered pixels of an exported ACBL card,
 // which came back near-black, not white, right where the marker was
@@ -78,16 +80,15 @@ function buildPdfBlob() {
 // black; at 1pt font, that stroke outline is what was showing through as
 // faint but visible marks. Setting the draw color to white too closes that
 // gap regardless of which render path a given page went through.
-function writeHiddenMarker(pdf, marker) {
+function writeHiddenMarker(pdf, marker, startY) {
   const CHARS_PER_LINE = 600;
-  const START_Y = 0.15;
   const LINE_HEIGHT = 0.04;
   pdf.setFontSize(1);
   pdf.setTextColor(255, 255, 255);
   pdf.setDrawColor(255, 255, 255);
   for (let i = 0; i * CHARS_PER_LINE < marker.length; i++) {
     const chunk = marker.slice(i * CHARS_PER_LINE, (i + 1) * CHARS_PER_LINE);
-    pdf.text(chunk, 0.1, START_Y + i * LINE_HEIGHT);
+    pdf.text(chunk, 0.1, (startY == null ? 0.15 : startY) + i * LINE_HEIGHT);
   }
 }
 
