@@ -2,14 +2,13 @@
 // both landing-page buttons:
 //
 //  - "Create ACBL Card": opens a wholly blank wizard.
-//  - "Edit ACBL Card": uploads a previously-generated ACBL PDF (from either
-//    of these two flows) and restores its exact answers, since those are
-//    embedded in the PDF via a round-trip marker (see acbl-export.js /
-//    extractAcblConfigFromPdf in pdf-import.js).
-//
-// The regular Agreement editor (app.js / pdf-export.js / pdf-import.js) is
-// unrelated and untouched — its landing buttons are just hidden for now,
-// not removed, in case that flow comes back later.
+//  - "Edit ACBL Card": uploads a previously-generated PDF and restores its
+//    exact answers. It also accepts an Agreement card here (auto-detected
+//    via extractAnyCardFromPdf in pdf-import.js and handed off to app.js's
+//    workspace) — and symmetrically, "Edit Existing Agreement" accepts an
+//    ACBL card and hands off here — since which-button-for-which-file-type
+//    is an easy mistake with four similarly-worded landing buttons, and
+//    the file itself already says unambiguously what it is.
 
 let acblState = null;
 let acblStepIndex = 0;
@@ -279,6 +278,15 @@ document.getElementById("convertAcblBtn").addEventListener("click", () => {
   openAcblWizardFromScratch();
 });
 
+// Accepts either an ACBL card or an Agreement card here too — see the
+// matching comment on handleUploadedFile in app.js.
 document.getElementById("editAcblBtn").addEventListener("click", () => {
-  openFileThen("editAcblFileInput", extractAcblConfigFromPdf, openAcblWizardFromAcblPdf);
+  openFileThen("editAcblFileInput", extractAnyCardFromPdf, result => {
+    if (result.kind === "acbl") {
+      openAcblWizardFromAcblPdf(result.data);
+    } else {
+      loadState(result.data); // app.js
+      showWorkspace(); // app.js
+    }
+  });
 });

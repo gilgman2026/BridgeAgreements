@@ -125,7 +125,7 @@ const STARTER_TEMPLATE = {
 
 // Prefix used to find embedded card data inside an exported PDF's text
 // content (see pdf-export.js's buildPdfBlob and pdf-import.js's
-// extractConfigFromPdf). Declared once here since both files need it and
+// extractAnyCardFromPdf). Declared once here since both files need it and
 // browsers reject a `const` re-declared across separate <script> tags in the
 // same document.
 const DATA_MARKER = "BRIDGECC1:";
@@ -363,13 +363,22 @@ function startNewCard() {
 // handle is the FileSystemFileHandle when opened via the native picker (so
 // Export can offer to save back in place), or null for the plain <input
 // type=file> fallback path.
+//
+// Accepts either an Agreement card or an ACBL card here — extractAnyCardFromPdf
+// (pdf-import.js) detects which one was actually uploaded rather than this
+// button rejecting anything but an Agreement, since that mismatch is an easy
+// mistake to make with four similarly-worded landing buttons.
 async function handleUploadedFile(file, handle) {
   hideLandingError();
   try {
-    const cfg = await extractConfigFromPdf(file); // pdf-import.js
-    currentFileHandle = handle;
-    loadState(cfg);
-    showWorkspace();
+    const result = await extractAnyCardFromPdf(file); // pdf-import.js
+    if (result.kind === "agreement") {
+      currentFileHandle = handle;
+      loadState(result.data);
+      showWorkspace();
+    } else {
+      openAcblWizardFromAcblPdf(result.data); // acbl-wizard.js
+    }
   } catch (err) {
     showLandingError(err.message);
   }
