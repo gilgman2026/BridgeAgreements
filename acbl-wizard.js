@@ -139,6 +139,8 @@ function renderAcblWizardStep() {
   header.appendChild(closeBtn);
   panel.appendChild(header);
 
+  panel.appendChild(createSuitToolbar()); // app.js
+
   const progress = document.createElement("div");
   progress.className = "acbl-wizard-progress";
   progress.textContent = `Section ${acblStepIndex + 1} of ${ACBL_SECTIONS.length}`;

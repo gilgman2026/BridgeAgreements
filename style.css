@@ -469,6 +469,16 @@ textarea.full-width { width: 100%; }
   padding: 24px 28px;
 }
 
+/* Overrides the Agreement editor's own suit-toolbar positioning (sticky
+   relative to the page's top bar) — inside the wizard panel the nearest
+   scrolling ancestor is the panel itself, which starts right at the
+   panel's own padding edge, not 70px down a page. */
+.acbl-wizard-panel .suit-toolbar {
+  position: sticky;
+  top: 0;
+  margin: 12px 0;
+}
+
 .acbl-wizard-header {
   display: flex;
   justify-content: space-between;

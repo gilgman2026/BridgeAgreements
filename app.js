@@ -430,6 +430,37 @@ document.querySelectorAll(".suit-btn").forEach(btn => {
   btn.addEventListener("click", () => insertSuitSymbol(btn.dataset.suit));
 });
 
+// Builds the same toolbar as a DOM node, for UI (like the ACBL wizard) that
+// renders its markup from JS rather than existing in index.html up front —
+// the querySelectorAll wiring above only runs once at load, so it can't
+// reach buttons created later.
+const SUIT_TOOLBAR_SYMBOLS = [
+  { symbol: "♣", title: "Clubs" },
+  { symbol: "♦", title: "Diamonds" },
+  { symbol: "♥", title: "Hearts" },
+  { symbol: "♠", title: "Spades" }
+];
+
+function createSuitToolbar() {
+  const toolbar = document.createElement("div");
+  toolbar.className = "suit-toolbar";
+  const label = document.createElement("span");
+  label.className = "suit-toolbar-label";
+  label.textContent = "Click to insert suit";
+  toolbar.appendChild(label);
+  SUIT_TOOLBAR_SYMBOLS.forEach(({ symbol, title }) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "suit-btn";
+    btn.dataset.suit = symbol;
+    btn.title = title;
+    btn.textContent = symbol;
+    btn.addEventListener("click", () => insertSuitSymbol(symbol));
+    toolbar.appendChild(btn);
+  });
+  return toolbar;
+}
+
 document.getElementById("startNewBtn").addEventListener("click", startNewCard);
 document.getElementById("uploadBtn").addEventListener("click", uploadExistingCard);
 document.getElementById("uploadFileInput").addEventListener("change", e => {
